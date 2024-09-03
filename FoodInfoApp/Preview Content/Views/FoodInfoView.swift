@@ -23,28 +23,34 @@ struct FoodInfoView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         HStack {
-                            if let brands = food.product.brands {
-                                if !brands.contains(food.product.product_name) {
-                                    Text(brands)
-                                        .font(.title)
-                                        .fontWeight(.bold)
-                                }
-                            } // show brand if exists
-                            Text(food.product.product_name.isEmpty ? "No Product Name Available": food.product.product_name)
-                                .font(.title)
-                                .fontWeight(.bold)
+                            AsyncImage(url: URL(string: food.product.image_front_url)) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                            } placeholder: {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle())
+                            }
+                            .frame(width: 150, height: 150, alignment: .leading)
+                            VStack {
+                                
+                                if let brands = food.product.brands {
+                                    if !brands.contains(food.product.product_name) {
+                                        Text(brands)
+                                    }
+                                } // show brand if exists
+                                Text(food.product.product_name.isEmpty ? "No Product Name Available": food.product.product_name)
+                                
+                                Image(food.product.getNutriScore())
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 150, height: (150/3)*2, alignment: .center)
+                                
+                            }
                         }
-                        AsyncImage(url: URL(string: food.product.image_front_url)) { image in
-                            image
-                                .resizable()
-                                .scaledToFit()
-                        } placeholder: {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: 180)
-                        .cornerRadius(10)
-                        .shadow(radius: 5)
+                        .font(.title)
+                        .fontWeight(.bold)
+                        
                         
                         Text("Product Code:")
                             .font(.headline)
@@ -77,33 +83,33 @@ struct FoodInfoView: View {
                                 .padding(.bottom, 1)
                         }
                         VStack(alignment: .leading) {
-                            Text("Nutritional Information")
-                                .font(.headline)
-                                .padding(.bottom, 1)
-                            
-                            ForEach(food.product.nutriments.allNutrients, id: \.name) { nutrient in
-                                HStack {
-                                    Text(nutrient.name)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                    if nutrient.name == "Energy" {
-                                        VStack(alignment: .trailing) {
-                                            Text("\(nutrient.value, specifier: "%.1f") kJ")
-                                            Text("\(nutrient.value * 0.2388, specifier: "%.1f") kcal")
+                            Section(
+                                header: Text("Nutritional Information")
+                                    .bold()) {
+                                        ForEach(food.product.nutriments.allNutrients, id: \.name) { nutrient in
+                                            HStack {
+                                                Text(nutrient.name)
+                                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                                if nutrient.name == "Energy" {
+                                                    VStack(alignment: .trailing) {
+                                                        Text("\(nutrient.value, specifier: "%.1f") kJ")
+                                                        Text("\(nutrient.value * 0.2388, specifier: "%.1f") kcal")
+                                                    }
+                                                } else {
+                                                    Text("\(nutrient.value, specifier: "%.1f") g")
+                                                }
+                                            }
+                                            .font(.body)
+                                            Divider()
                                         }
-                                    } else {
-                                        Text("\(nutrient.value, specifier: "%.1f") g")
                                     }
-                                }
-                                .font(.body)
-                                Divider()
-                            }
                         }
                         .padding(.bottom, 5)
                     }
                     .padding()
                 }
             } else {
-                ProgressView()
+                Text("Product not found. Please try an another barcode.")
             }
         }
         .alert(isPresented: $showAlert) {
@@ -121,7 +127,7 @@ struct FoodInfoView: View {
                 )
             }
         }
-        .background(isAllergic ? Color.red.opacity(0.3) : Color.green.opacity(0.3))
+//        .background(isAllergic ? Color.red.opacity(0.3) : Color.green.opacity(0.3))
         .onAppear {
             loadFoodInfo()
         }
@@ -156,3 +162,14 @@ struct FoodInfoView: View {
     }
 }
 
+#Preview {
+
+    @Previewable @State var sampleBarcodeData = "3017620422003"
+    @Previewable @State var sampleAllergens = ["Peanuts", "Gluten"]
+
+    FoodInfoView(
+        barcodeData: $sampleBarcodeData,
+        myAllergens: $sampleAllergens,
+        shouldSave: false
+    )
+}

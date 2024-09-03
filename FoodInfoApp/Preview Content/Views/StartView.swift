@@ -11,40 +11,62 @@ struct StartView: View {
     @State private var barcodeData: String = ""
     @State private var myAllergens: [String] = []
     @StateObject private var dataController = ScannedProductDataController()
-    
-    init() {
-        let tabBarAppearance = UITabBarAppearance()
-        tabBarAppearance.backgroundColor = UIColor(.white)
-        tabBarAppearance.configureWithTransparentBackground()
-        UITabBar.appearance().backgroundColor = UIColor(.white)
-    }
+    @State private var selectedTab: Int = 0
 
     
-    @State private var isShowScanner = false
-    var body: some View {
-        TabView {
-            Tab("allergenic", systemImage: "allergens") {
-                AllergensView(myAllergens: $myAllergens)
-                
-            }
-            Tab("Scan Code", systemImage: "barcode.viewfinder") {
-                ScannerView(myAllergens: $myAllergens)
-                    .environmentObject(dataController)
-                
-            }
-            Tab("scans", systemImage: "list.bullet") {
-                ScannedItemView(myAllergens: $myAllergens)
-                    .environmentObject(dataController)
-            }
-            
-        }
-        .background(.white)
+    init() {
+        TabBarTransparent() // Set transparent background at the start view is ScannerView
     }
+    
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            ScannerView(barcodeData: barcodeData, myAllergens: $myAllergens)
+                .environmentObject(dataController)
+                .tabItem {
+                    Label("Scan Code", systemImage: "barcode.viewfinder")
+                }
+                .tag(0)
+            
+            ScannedItemView(myAllergens: $myAllergens)
+                .environmentObject(dataController)
+                .tabItem {
+                    Label("Scans", systemImage: "list.bullet")
+                }
+                .tag(1)
+            
+            AllergensView(myAllergens: $myAllergens)
+                .tabItem {
+                    Label("Allergenic", systemImage: "allergens")
+                }
+                .tag(2)
+        }
+        .onChange(of: selectedTab, { oldValue, newValue in
+            print("Old Value: \(oldValue), New Value: \(newValue)")
+            if newValue == 0 {
+                TabBarTransparent()
+            } else {
+                TabBarWhiteBackground()
+            }
+        })
+    }
+}
+
+private func TabBarTransparent() {
+    let tabBarAppearance = UITabBarAppearance()
+    tabBarAppearance.configureWithTransparentBackground()
+    tabBarAppearance.backgroundColor = UIColor.clear
+    UITabBar.appearance().standardAppearance = tabBarAppearance
+    UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+}
+
+private func TabBarWhiteBackground() {
+    let tabBarAppearance = UITabBarAppearance()
+    tabBarAppearance.configureWithOpaqueBackground()
+    tabBarAppearance.backgroundColor = UIColor.white
+    UITabBar.appearance().standardAppearance = tabBarAppearance
+    UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
 }
 
 #Preview {
     StartView()
 }
-
-
-

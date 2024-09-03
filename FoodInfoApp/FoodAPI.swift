@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import SwiftUICore
+import DeveloperToolsSupport
 
 struct FoodInfo: Codable {
     var code: String
@@ -20,6 +22,26 @@ struct FoodInfo: Codable {
         var ingredients_text_de: String?
         var brands: String?
         var nutriments: Nutriments
+        var nutriscore_grade: String
+        
+        
+        func getNutriScore() -> String {
+            switch nutriscore_grade.lowercased() {
+            case "a":
+                return "Nutri-score-A.svg"
+            case "b":
+                return "Nutri-score-B.svg"
+            case "c":
+                return "Nutri-score-C.svg"
+            case "d":
+                return "Nutri-score-D.svg"
+            case "e":
+                return "Nutri-score-E.svg"
+            default:
+                return "questionmark.circle"
+            }
+        }
+
     }
     
     struct Nutriments: Codable {

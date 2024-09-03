@@ -22,7 +22,8 @@ class ScannedProductDataController: ObservableObject {
     }
     
     func deleteProduct(at offsets: IndexSet) {
-        products.remove(atOffsets: offsets)
+        let reversedOffsets = IndexSet(offsets.map { products.count - 1 - $0 }) // reversed the values for better deleting
+        products.remove(atOffsets: reversedOffsets)
         saveProducts()
     }
     private func productExists(code: String) -> Bool {

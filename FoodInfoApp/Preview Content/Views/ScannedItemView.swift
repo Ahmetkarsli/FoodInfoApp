@@ -1,6 +1,14 @@
+//
+//  ScannedItemView.swift
+//  FoodInfoApp
+//
+//  Created by Ahmet Karsli on 20.07.24.
+//
+
 import SwiftUI
 
 struct ScannedItemView: View {
+    
     @EnvironmentObject var dataController: ScannedProductDataController
     @Binding var myAllergens: [String]
     @State private var searchScannedProduct = ""
@@ -9,7 +17,10 @@ struct ScannedItemView: View {
         NavigationView {
             List {
                 ForEach(filteredProducts) { product in
-                    NavigationLink(destination: FoodInfoView(barcodeData: .constant(product.code), myAllergens: $myAllergens, shouldSave: false)
+                    NavigationLink(destination: FoodInfoView(
+                        barcodeData: .constant(product.code),
+                        myAllergens: $myAllergens,
+                        shouldSave: false)
                         .environmentObject(dataController)) {
                             HStack {
                                 // Product Image
@@ -57,13 +68,15 @@ struct ScannedItemView: View {
         }
         .searchable(text: $searchScannedProduct)
     }
+    
     private var filteredProducts: [ScannedProduct] {
-           if searchScannedProduct.isEmpty {
-               return dataController.products
-           } else {
-               return dataController.products.filter { $0.product_name.contains(searchScannedProduct)}
-           }
-       }
+        let filtered = searchScannedProduct.isEmpty ?
+            dataController.products :
+            dataController.products.filter { $0.product_name.contains(searchScannedProduct) }
+        
+        return filtered.sorted { $0.dateScanned > $1.dateScanned }
+    }
+
 }
 
 
